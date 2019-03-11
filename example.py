@@ -3,19 +3,29 @@ from randomplayer import RandomPlayer
 from raise_player import RaisedPlayer
 from playerV1 import PlayerV1
 from playerV2 import PlayerV2
+import csv
 
+f = open("poker_result.csv", "w+")
 
 results = {}
 for i in range(10):
+    f.write('round ' + str(i + 1))
     for j in range(i, 10):
         #TODO:config the config as our wish
         config = setup_config(max_round=10, initial_stack=10000, small_blind_amount=10)
 
+        # Edit the players here
         config.register_player(name="F1", algorithm=PlayerV2(0.7, 0.4))
         config.register_player(name="F2", algorithm=PlayerV2(0.7, 0.35))
 
         result = start_poker(config, verbose=1)
-        """
+    for player in result['players']:
+        f.write(',' + player['name'] +',' + str(player['stack']) + "\n")
+
+
+f.close()
+
+"""
         f_result = ""
         for player in result['players']:
            f_result += player['name']+": "+str(player['stack'])+"  "
