@@ -20,7 +20,7 @@ def _format_result(result_message):
     return {
             "rule": result_message["message"]["game_information"]["rule"],
             "players": result_message["message"]["game_information"]["seats"]
-            }
+    }
 
 class Config(object):
 
