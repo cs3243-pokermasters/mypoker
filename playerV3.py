@@ -48,7 +48,7 @@ class PlayerV3(BasePokerPlayer):
         self.weight_fold_3 = 2
         self.weight_fold_4 = 2
         self.weight_fold_5 = 2
-        
+
     def declare_action(self, valid_actions, hole_card, round_state):
         total_weight = 0
 
@@ -91,6 +91,7 @@ class PlayerV3(BasePokerPlayer):
             if h_num == 2:
 
                 if h2_num
+
         cols = {}
         for s in SUITS:
             for card in cards:
@@ -123,6 +124,9 @@ class PlayerV3(BasePokerPlayer):
                 h_card = card
         if h_num > 1:
             #We have a chance of getting a straight.
+
+        # high card
+        # put this into pair, three of a kind, full house
 
         #=======================FEATURE 2: OUR BID AMOUNT===========================
         weight_2 = 0
