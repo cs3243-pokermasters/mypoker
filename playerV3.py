@@ -58,11 +58,12 @@ class PlayerV3(BasePokerPlayer):
         cards = hole_card + round_state["community_card"]
         nums = {}
         for n in NUMBERS:
+            nums[n] = 0
             for card in cards:
                 if card[1] == n:
                     nums[n] += 1
         h_num = h2_num = h_card = h2_card = 0
-        for num, card in nums:
+        for card, num in nums.items():
             if num > h_num:
                 h2_num = h_num
                 h2_card = h_card
@@ -76,29 +77,32 @@ class PlayerV3(BasePokerPlayer):
             prob = 1
             if h_num == 4:
                 weight_1 += WEIGHT_FOUR_OF_A_KIND
-            elif 7 - len(cards) >= 4 - h_num:
+            elif 7 - len(cards) >= 4 - h_num: # num of remaining unknown cards is >= num required to have FOUR_OF_A_KIND
                 # Four of a kind
                 if h_num == 2:
-                    weight_1 += nCr(11, 2) * nCr(52 - len(cards) - 2, 7 - len(cards)) * WEIGHT_FOUR_OF_A_KIND
-                else:
-                    weight_1 += nCr(10, 2) * nCr(52 - len(cards) - 1, 7 - len(cards)) * WEIGHT_FOUR_OF_A_KIND
+                    weight_1 += nCr(52 - len(cards) - 2, 7 - len(cards) - 2) * WEIGHT_FOUR_OF_A_KIND
+                else: # h_num == 3
+                    weight_1 += nCr(52 - len(cards) - 1, 7 - len(cards) - 1) * WEIGHT_FOUR_OF_A_KIND
+
             if h_num == 3:
                 #assign P(four of a kind) weight
-                if h2_num >= 2 :
+                if h2_num >= 2:
                     #assign full house
-                else :
+                    weight_1 = weight_1 # TODO: Replace this
+                else:
                     #assign three of a kind
+                    weight_1 = weight_1 # TODO: Replace this
             if h_num == 2:
-
-                if h2_num
+                weight_1 = weight_1 # TODO: Replace this
 
         cols = {}
         for s in SUITS:
+            cols[s] = 0
             for card in cards:
                 if card[0] == s:
                     cols[s] += 1
         h_num = h2_num = h_card = h2_card = 0
-        for num, card in nums:
+        for num, card in nums.items():
             if num > h_num:
                 h2_num = h_num
                 h2_card = h_card
@@ -109,21 +113,25 @@ class PlayerV3(BasePokerPlayer):
                 h2_card = card
         if h_num > 1:
             # We have at least two cards of the same suit.
-            h_num
+            weight_1 = weight_1  # TODO: Replace this
+            # h_num
         runs = {}
+
+        # For straights
         for r in range(0,9):
             checked = []
             for card in cards:
-                if card[1] >= NUMBERS[r] and card[1] <= NUMBERS[r+5] and card[1] not in checked:
-                    checked.push(card[1])
-                    runs[r] == 1
+                if NUMBERS[r] <= card[1] <= NUMBERS[(r+5)%13] and card[1] not in checked:
+                    checked.append(card[1])
+                    runs[r] = 1
         h_num = h_card = 0
-        for num, card in nums:
+        for num, card in nums.items():
             if num > h_num:
                 h_num = num
                 h_card = card
         if h_num > 1:
             #We have a chance of getting a straight.
+            weight_1 = weight_1  # TODO: Replace this
 
         # high card
         # put this into pair, three of a kind, full house
@@ -132,16 +140,18 @@ class PlayerV3(BasePokerPlayer):
         weight_2 = 0
 
         bid_amt = 0
-        for stage in round_state["action_histories"].values() :
-            if stage["uuid"] == self.uuid :
-                bid_amt += stage["amount"]
+        for stage in round_state["action_histories"].values():
+            if len(stage) != 0 and stage[0]["uuid"] == self.uuid:
+                bid_amt += stage[0]["amount"]
+        # More bid amount, the less likely to fold.
 
         #=======================FEATURE 3: RAISE_OVER_RUN RATIO===========================
         action = ""
         weight_3 = 0
 
-        for stage in round_state["action_histories"].values().reversed() :
-            if stage["uuid"] != self.uuid :
+        round_state["action_histories"].values()[0].reverse()
+        for stage in round_state["action_histories"].values()[0]:
+            if stage["uuid"] != self.uuid:
                 action = stage["action"]
                 break
 
@@ -150,7 +160,7 @@ class PlayerV3(BasePokerPlayer):
             opp_call = 1
             opp_fold = 1
 
-            for stage in round_state["action_histories"].values() :
+            for stage in round_state["action_histories"].values()[0]:
                 if stage["uuid"] != self.uuid :
                     if stage["action"] == "CALL" :
                         opp_call += 1
@@ -164,9 +174,11 @@ class PlayerV3(BasePokerPlayer):
 
 
         #=======================FEATURE 4: RANDOMNESS===========================
+        # To make our actions less predictable
         weight_4 = rand.random()
 
-        #=======================FEATURE 5: If can call dont fold===========================
+        #=======================FEATURE 5: If can check dont fold===========================
+        # Is this part of algo or feature?
 
         total_raise_weight = weight_1 * weight_raise_1
         total_fold_weight = 0
